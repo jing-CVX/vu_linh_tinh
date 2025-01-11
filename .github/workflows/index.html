@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Grid</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0; /* Loại bỏ margin của body */
+            padding: 20px;
+        }
+        #gridContainer {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%; /* Đảm bảo container chiếm toàn bộ chiều rộng */
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(9, 1fr); /* Sử dụng 1fr để tự động điều chỉnh kích thước */
+            grid-template-rows: repeat(9, 50px);
+            gap: 5px;
+            border: 2px solid #000;
+            margin: 5px 0; /* Giảm margin giữa các bảng */
+            padding: 10px;
+            width: 100%; /* Đảm bảo bảng chiếm 100% chiều rộng */
+        }
+        .cell {
+            width: 100%; /* Đảm bảo ô chiếm 100% chiều rộng của grid */
+            height: 50px;
+            text-align: center;
+            border: 1px solid #ccc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+        .highlight {
+            background-color: yellow;
+        }
+        button {
+            margin: 5px;
+            padding: 10px;
+            font-size: 16px;
+            cursor: pointer; /* Thêm con trỏ tay cho các nút */
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Lụm lúa</h1>
+    <div style="display: flex; gap: 10px; justify-content: space-between;width: 100%;">
+        <button style="flex: 1;" id="setupBtn">Tạo nè</button>
+        <button style="flex: 1;" id="setBackgroundBtn" disabled>Cho miếng màu</button>
+    </div>
+    <div style="display: flex; gap: 10px; justify-content: space-between;width: 100%;">
+        <button style="flex: 1; background-color: #12d622;" id="playBtn"  disabled>Nó hô rồi nè</button>
+        <button style="flex: 1; background-color: #bfdb09;" id="resetBtn" disabled>Thua rồi</button>
+    </div>
+    
+    
+    
+    <div id="gridContainer">
+        <div class="grid" id="grid1"></div>
+        <div class="grid" id="grid2"></div>
+    </div>
+
+    <script>
+        const grid1Element = document.getElementById('grid1');
+        const grid2Element = document.getElementById('grid2');
+        const setupBtn = document.getElementById('setupBtn');
+        const setBackgroundBtn = document.getElementById('setBackgroundBtn');
+        const playBtn = document.getElementById('playBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        
+        let gridData1 = Array(9).fill(0).map(() => Array(9).fill(''));
+        let gridData2 = Array(9).fill(0).map(() => Array(9).fill(''));
+
+        setupBtn.addEventListener('click', () => {
+            grid1Element.innerHTML = '';
+            grid2Element.innerHTML = '';
+
+            for (let i = 0; i < 9; i++) {
+                for (let j = 0; j < 9; j++) {
+                    const cell1 = document.createElement('div');
+                    cell1.classList.add('cell');
+                    cell1.contentEditable = true;
+                    cell1.innerText = gridData1[i][j]; // Hiển thị lại giá trị đã setup
+                    cell1.addEventListener('input', (e) => {
+                        gridData1[i][j] = e.target.innerText.trim() || '';
+                    });
+                    grid1Element.appendChild(cell1);
+
+                    const cell2 = document.createElement('div');
+                    cell2.classList.add('cell');
+                    cell2.contentEditable = true;
+                    cell2.innerText = gridData2[i][j]; // Hiển thị lại giá trị đã setup
+                    cell2.addEventListener('input', (e) => {
+                        gridData2[i][j] = e.target.innerText.trim() || '';
+                    });
+                    grid2Element.appendChild(cell2);
+                }
+            }
+            setBackgroundBtn.disabled = false;
+            playBtn.disabled = false;
+            resetBtn.disabled = true; // Disable reset button initially
+        });
+
+        setBackgroundBtn.addEventListener('click', () => {
+            const backgroundValue = prompt('Enter value to set background:');
+            const color = prompt('Enter a color (name or hex code):', '#00FFFF'); // Hộp thoại chọn màu
+            
+            const cells1 = grid1Element.querySelectorAll('.cell');
+            const cells2 = grid2Element.querySelectorAll('.cell');
+
+            cells1.forEach((cell, index) => {
+                if (gridData1[Math.floor(index / 9)][index % 9] === '' || gridData1[Math.floor(index / 9)][index % 9] === '0') {
+                    cell.style.backgroundColor = color; // Thiết lập màu nền đã chọn
+                    cell.innerText = backgroundValue;
+                    gridData1[Math.floor(index / 9)][index % 9] = backgroundValue;
+                } else {
+                    cell.style.backgroundColor = '';
+                }
+            });
+
+            cells2.forEach((cell, index) => {
+                if (gridData2[Math.floor(index / 9)][index % 9] === '' || gridData2[Math.floor(index / 9)][index % 9] === '0') {
+                    cell.style.backgroundColor = color; // Thiết lập màu nền đã chọn
+                    cell.innerText = backgroundValue;
+                    gridData2[Math.floor(index / 9)][index % 9] = backgroundValue;
+                } else {
+                    cell.style.backgroundColor = '';
+                }
+            });
+        });
+
+        playBtn.addEventListener('click', () => {
+            const cells1 = grid1Element.querySelectorAll('.cell');
+            const cells2 = grid2Element.querySelectorAll('.cell');
+
+            cells1.forEach((cell) => {
+                cell.addEventListener('click', () => {
+                    cell.classList.toggle('highlight');
+                });
+            });
+
+            cells2.forEach((cell) => {
+                cell.addEventListener('click', () => {
+                    cell.classList.toggle('highlight');
+                });
+            });
+
+            resetBtn.disabled = false; // Enable reset button after starting play
+        });
+
+        resetBtn.addEventListener('click', () => {
+            const cells1 = grid1Element.querySelectorAll('.cell');
+            const cells2 = grid2Element.querySelectorAll('.cell');
+
+            cells1.forEach(cell => {
+                cell.classList.remove('highlight');
+            });
+            cells2.forEach(cell => {
+                cell.classList.remove('highlight');
+            });
+        });
+    </script>
+
+</body>
+</html>
